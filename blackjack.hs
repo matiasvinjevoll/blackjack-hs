@@ -20,7 +20,7 @@ game gen = do
     (playerCards', deck') <- playerGame playerCards deck
     let dealerCards' = dealerGame dealerCards deck'
         outcome      = gameOutcome playerCards' dealerCards'
-    putStrLn ("Dealers' cards: " ++ (printCards dealerCards'))
+    putStrLn $ "Dealers' cards: " ++ printCards dealerCards'
     putStrLn outcome
 
 gameOutcome :: PlayerCards -> DealerCards -> String
@@ -35,12 +35,12 @@ gameOutcome playerCards dealerCards
           playerScore      = highestValidScore playerCards
           dealerScore      = highestValidScore dealerCards
           standoff         = (playerBlackjack && dealerBlackjack) ||
-                                ((not playerBlackjack && (not dealerBlackjack)) &&
+                                (not playerBlackjack && not dealerBlackjack &&
                                    playerScore == dealerScore && playerValidScore)
 
 playerGame :: PlayerCards -> CardDeck -> IO (Cards, Cards)
 playerGame playerCards deck = do
-    putStrLn $ "Your cards: " ++ (printCards playerCards)
+    putStrLn $ "Your cards: " ++ printCards playerCards
     if isBlackjack playerCards || is21 playerCards then
         return (playerCards, deck)
     else
@@ -58,11 +58,11 @@ printCards :: Cards -> String
 printCards cards = intercalate ", " (map show cards)
 
 dealerGame :: DealerCards -> CardDeck -> DealerCards
-dealerGame x [] = error ("Not enough cards!" ++ (show x))
+dealerGame x [] = error "Not enough cards!"
 dealerGame dealerCards (card:cards) =
-    let shouldStand = (isDealerStand dealerCards)
+    let shouldStand = isDealerStand dealerCards
         validScore = isValidScore dealerCards
-    in  if shouldStand || (not validScore) then dealerCards
+    in  if shouldStand || not validScore then dealerCards
         else dealerGame (card:dealerCards) cards
 
 highestValidScore :: Cards -> Score
@@ -72,19 +72,17 @@ isValidScore :: Cards -> Bool
 isValidScore cards = (==) 1 $ length . find (\x -> x <= 21) $ score cards  
 
 isBlackjack :: Cards -> Bool
-isBlackjack cards = (length cards == 2) && (is21 cards)
+isBlackjack cards = length cards == 2 && is21 cards
 
 is21 :: Cards -> Bool
 is21 cards = (==) 1 $ length . find (\x -> x == 21) $ score cards
 
 isDealerStand :: DealerCards -> Bool
-isDealerStand cards = ((==) 1 $ length  (find (\x -> x >= 17) (filter (\x -> x <= 21 ) $ score cards)))
+isDealerStand cards = (==) 1 $ length $ find (\x -> x >= 17) $ filter (\x -> x <= 21 ) $ score cards
 
 score :: Cards -> [Score]
-score cards =
-    let
-        cardScores = foldl (\acc card -> ((cardScore card):acc)) [] cards
-    in nub $ sum <$> sequence cardScores
+score cards = let cardScores = foldl (\acc card -> (cardScore card):acc) [] cards
+              in nub $ sum <$> sequence cardScores
 
 cardScore :: Card -> [Score]
 cardScore (PipCard _ value) =
