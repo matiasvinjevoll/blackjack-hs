@@ -1,4 +1,5 @@
 import Cards
+import Graphics
 import Data.List
 import System.Random
 
@@ -10,6 +11,7 @@ type NumPlayers  = Int
 type Score       = Int
 
 main = do
+    header
     gen <- getStdGen
     game gen
 
