@@ -25,7 +25,7 @@ game gen = do
 
 gameOutcome :: PlayerCards -> DealerCards -> String
 gameOutcome playerCards dealerCards
-    | not playerValidScore || playerScore < dealerScore = "You loose!"
+    | not playerValidScore || playerScore < dealerScore = "You lose!"
     | standoff                                          = "Standoff!"
     | playerBlackjack                                   = "You've got Blackjack!"
     | playerScore > dealerScore                         = "You win!"
